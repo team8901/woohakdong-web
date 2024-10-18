@@ -1,27 +1,38 @@
+import { getClubsInfo } from "@api/club/getClubsInfo";
 import { fetchLoginData } from "@api/login/fetchLoginData";
 import Button from "@components/Button";
 import { auth } from "@config/firebaseConfig";
 import { useAuth } from "@contexts/AuthContext";
+import usePrefixedNavigate from "@hooks/usePrefixedNavigate";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 
 const GoogleLoginButton = () => {
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const navigate = usePrefixedNavigate();
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
     // console.log(userCredential);
-    const oauthAccessToken = ((userCredential as any)._tokenResponse as any)
+    const oauthAccessToken = (userCredential as any)._tokenResponse
       .oauthAccessToken;
     const loginData = await fetchLoginData(oauthAccessToken);
-    if (loginData) {
-      login(loginData);
-      navigate("/clubJoinOnboarding");
-    } else {
+    if (!loginData) {
       alert("로그인에 실패했습니다.");
+      return;
     }
+
+    login(loginData);
+
+    const checkClubs = async () => {
+      const { result } = await getClubsInfo();
+      if (result.length === 0) {
+        navigate(`/clubJoinOnboarding`);
+      } else {
+        navigate(`/`);
+      }
+    };
+    checkClubs();
   };
 
   return (

@@ -10,6 +10,7 @@ axiosInstance.interceptors.request.use(
   async (config) => {
     (config as AxiosRequestConfig).headers = {
       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      "ngrok-skip-browser-warning": "any",
     };
     return config;
   },
@@ -39,6 +40,7 @@ axiosInstance.interceptors.response.use(
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       return axiosInstance(originalRequest);
     }
+    console.error(`${error.response.data.message}`);
     return Promise.reject(error);
   }
 );

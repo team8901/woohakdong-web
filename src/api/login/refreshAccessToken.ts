@@ -3,22 +3,20 @@ import axios, { AxiosError } from "axios";
 
 export const refreshAccessToken = async () => {
   try {
-    // const res = await axios.post<LoginData>(`/api/v1/auth/refresh`, {
-    //   refreshToken: localStorage.getItem("refreshToken"),
-    // });
     const res = await axios.post<LoginData>(
       `${import.meta.env.VITE_API_URL}/v1/auth/refresh`,
       {
         refreshToken: localStorage.getItem("refreshToken"),
       }
     );
-    console.log(`/api/auth/refresh`, res);
+    console.log(`리프레시 토큰 요청 성공`, res);
     const { accessToken, refreshToken } = res.data;
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
   } catch (error) {
     console.error(`/api/auth/refresh`, error);
     if (
+      (error as AxiosError)?.response?.status === 400 ||
       (error as AxiosError)?.response?.status === 401 ||
       (error as AxiosError)?.response?.status === 403
     ) {
